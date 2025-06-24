@@ -3,6 +3,7 @@ LOG_DIR: "../artifacts/logs"
 IMG_OUT_DIR: "../artifacts/img"
 MODEL:
   model_name: "GPTModel"
+  context_len: 8
 DATA:
   root_dir: "../data/tiny_shakespeare"
   target_url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"

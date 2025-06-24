@@ -12,13 +12,11 @@ def train(args):
     logger = get_logger(config["LOG_DIR"])
     trainer = Trainer(config, logger)
 
-    model_cfg = config["MODEL"]
-    model = GPTModel(model_cfg)
+    model = GPTModel(config)
     trainer.set_model(model)
 
-    data_config = config["DATA"]
-    train_dataset = Tinyshakespeare(cfg=data_config, mode="train", logger=logger)
-    val_dataset = Tinyshakespeare(cfg=data_config, mode="val", logger=logger)
+    train_dataset = Tinyshakespeare(cfg=config, mode="train", logger=logger)
+    val_dataset = Tinyshakespeare(cfg=config, mode="val", logger=logger)
 
     trainer.set_dataset(train_dataset, val_dataset, data_config=config["DATA"])
     trainer.set_optimizer(optim_config=config["OPTIM"])

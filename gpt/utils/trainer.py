@@ -18,20 +18,20 @@ class Trainer(TrainerBase):
     def train_one_epoch(self):
         self.model.train()
         with tqdm(enumerate(self.train_loader), desc=f"Epoch: {self.epoch}/{self.optim_config['num_epochs']}") as pbar:
-            for n_iter, (tokens, targets) in pbar:
+            for n_iter, (context, targets) in pbar:
                 self.optimizer.zero_grad()
-                tokens = tokens.to(self.device)
+                context = context.to(self.device)
                 targets = targets.to(self.device)
 
-                preds = self.model(tokens)
-                loss = self.loss_fn(preds, targets)
+                preds = self.model(context)
+                # loss = self.loss_fn(preds, targets)
 
-                loss.backward()
-                self.gradient_clip()
-                self.optimizer.step()
-                self.total_iters += 1
-                pbar.set_postfix({"total_iters": self.total_iters, "loss": loss.item(), "lr": self.get_lr()})
-                self.scheaduler_step()
+                # loss.backward()
+                # self.gradient_clip()
+                # self.optimizer.step()
+                # self.total_iters += 1
+                # pbar.set_postfix({"total_iters": self.total_iters, "loss": loss.item(), "lr": self.get_lr()})
+                # self.scheaduler_step()
 
     def evaluate_model(self):
         self.logger.info("Running Evaluation...")

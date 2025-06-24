@@ -1,20 +1,28 @@
 import os
-from abc import ABC
 from pathlib import Path
 
 import requests
+import torch
+from dataset.tokenizer import WordLevelTokenizer
+from torch.utils.data import Dataset
 
 
-class DatasetBase(ABC):
+class DatasetBase(Dataset):
     def __init__(self, cfg, logger, mode="train"):
         self.cfg = cfg
+        self.cfg_data = cfg["DATA"]
         self.logger = logger
-        self.root_dir = Path(cfg["root_dir"])
+        self.root_dir = Path(self.cfg_data["root_dir"])
         os.makedirs(self.root_dir, exist_ok=True)
-        self.target_url = cfg["target_url"]
+        self.target_url = self.cfg_data["target_url"]
         self.mode = mode
         self.download_data()
+
         self.data = self.load_data()
+        self.vocab = sorted(list(set(self.data)))
+        self.vocab_size = len(self.vocab)
+        self.context_len = cfg["MODEL"]["context_len"]
+        self.tokenizer = WordLevelTokenizer(self.vocab)
 
     def download_data(self):
         file_path = os.path.join(self.root_dir, "input.txt")
@@ -32,7 +40,12 @@ class DatasetBase(ABC):
         return data
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data) - (self.context_len + 1)
 
     def __getitem__(self, idx):
-        return self.data[idx]
+        context = self.data[idx : idx + self.context_len]
+        target = self.data[idx + 1 : idx + 1 + self.context_len]
+
+        context_encoder = self.tokenizer.encode(context)
+        target_encoder = self.tokenizer.encode(target)
+        return torch.tensor(context_encoder), torch.tensor(target_encoder)
