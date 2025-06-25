@@ -42,10 +42,12 @@ class MultiHeadAttention(nn.Module):
                 for _ in range(num_heads)
             ]
         )
+        self.project = nn.Linear(embed_size, embed_size)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         out = out = torch.cat([h(x) for h in self.heads], -1)
+        out = self.project(out)
         out = self.dropout(out)
         return out
 
@@ -80,7 +82,7 @@ class GPTModel(nn.Module):
         self.num_heads = cfg["MODEL"]["num_heads"]
         self.dropout = cfg["MODEL"]["dropout"]
 
-        self.embedding = nn.Embedding(self.embed_size, self.embed_size)
+        self.embedding = nn.Embedding(self.vocab_size, self.embed_size)
         self.pos_embeddings = nn.Embedding(self.context_len, self.embed_size)
         self.tr_layers = nn.ModuleList(
             [
