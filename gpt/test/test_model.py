@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from dataset.tokenizer import WordLevelTokenizer
 from model.bigram_model import BigramModel
-from model.gpt_model import Attention, GPTModel
+from model.gpt_model import Attention, GPTModel, MultiHeadAttention
 from utils.misc import get_logger, load_config
 
 with tempfile.TemporaryDirectory() as tmp_dir:
@@ -51,7 +51,16 @@ def test_attention():
     embed_size = 32
     B, T = 2, 10
     x = torch.randn(B, T, embed_size)
-    module = Attention(embed_size=embed_size)
+    module = Attention(in_embed_size=embed_size, out_embed_size=embed_size)
+    out = module(x)
+    assert out.shape == (B, T, embed_size)
+
+
+def test_multihead_attention():
+    B, T, embed_size = 2, 10, 32
+    num_heads = 4
+    x = torch.randn(B, T, embed_size)
+    module = MultiHeadAttention(embed_size=embed_size, num_heads=num_heads)
     out = module(x)
     assert out.shape == (B, T, embed_size)
 
