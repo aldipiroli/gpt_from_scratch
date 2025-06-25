@@ -12,6 +12,7 @@ class TrainerBase(ABC):
         self.logger = logger
         self.logger.info(f"config: {config}")
         self.epoch = 0
+        self.num_epochs = config["OPTIM"]["num_epochs"]
         self.total_iters = 0
 
         self.ckpt_dir = Path(config["CKPT_DIR"])
