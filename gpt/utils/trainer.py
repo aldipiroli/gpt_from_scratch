@@ -19,7 +19,7 @@ class Trainer(TrainerBase):
             self.epoch = epoch
             self.train_one_epoch()
             self.evaluate_model()
-        self.evaluate_model(generate=True)
+        self.generate_tokens()
 
     def train_one_epoch(self):
         self.model.train()
@@ -40,9 +40,9 @@ class Trainer(TrainerBase):
             self.gradient_clip()
             self.optimizer.step()
             self.total_iters += 1
-            # self.logger.info(f"total_iters: {self.total_iters} loss: {loss.item()} lr: {self.get_lr()}")
-        self.logger.info(f"Train Loss {torch.mean(torch.tensor(train_loss))}")
+        self.logger.info(f"Train loss {torch.mean(torch.tensor(train_loss))}")
 
+    @torch.no_grad()
     def evaluate_model(self, generate=False):
         self.model.eval()
         eval_loss = []
@@ -56,7 +56,11 @@ class Trainer(TrainerBase):
             loss = self.loss_fn(preds, targets)
             eval_loss.append(loss)
         self.logger.info(f"Val loss {torch.mean(torch.tensor(eval_loss))}")
-        if generate:
-            context = context.to(self.device)
-            generated = self.model.generate(context, 100)
-            self.logger.info(f"Generated Tokens: {self.val_dataset.tokenizer.decode(generated.squeeze())}")
+
+    @torch.no_grad()
+    def generate_tokens(self, num_gen_tokens=100, context="\n"):
+        self.model.eval()
+        context = self.val_dataset.tokenize_string(context)
+        context = context.unsqueeze(0).to(self.device)
+        generated = self.model.generate(context, num_gen_tokens)
+        self.logger.info(f"Generated Tokens: {self.val_dataset.tokenizer.decode(generated.squeeze())}")

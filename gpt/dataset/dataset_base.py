@@ -44,6 +44,12 @@ class DatasetBase(Dataset):
             data = f.read()
         return data
 
+    def tokenize_string(self, x):
+        x = np.array(list(x))
+        x = self.tokenizer.encode(x)
+        x = torch.tensor(x)
+        return x
+
     def __len__(self):
         return len(self.data) - (self.context_len + 1)
 
@@ -51,9 +57,6 @@ class DatasetBase(Dataset):
         context = self.data[idx : idx + self.context_len]
         target = self.data[idx + 1 : idx + 1 + self.context_len]
 
-        context = np.array(list(context))
-        target = np.array(list(target))
-
-        context_encoder = self.tokenizer.encode(context)
-        target_encoder = self.tokenizer.encode(target)
-        return torch.tensor(context_encoder), torch.tensor(target_encoder)
+        context = self.tokenize_string(context)
+        target = self.tokenize_string(target)
+        return context, target
