@@ -68,9 +68,10 @@ class Trainer(TrainerBase):
         self.logger.info(f"Epoch {self.epoch}/{self.num_epochs}: val loss {torch.mean(torch.tensor(eval_loss))}")
 
     @torch.no_grad()
-    def generate_tokens(self, num_gen_tokens=100, context="\n"):
+    def generate_tokens(self, num_gen_tokens=100):
         self.model.eval()
-        context = self.val_dataset.tokenize_string(context)
+        context = "\n"
+        context = self.val_dataset.tokenize_string(context[: self.model.context_len])
         context = context.unsqueeze(0).to(self.device)
         generated = self.model.generate(context, num_gen_tokens)
         self.logger.info("-" * 30)

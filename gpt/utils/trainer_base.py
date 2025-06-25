@@ -28,6 +28,11 @@ class TrainerBase(ABC):
         self.model.to(self.device)
         self.logger.info("Model:")
         self.logger.info(self.model)
+        n_param = self.get_num_param_model()
+        self.logger.info(f"Num Parameters: {n_param}, {n_param/ 1e6} M")
+
+    def get_num_param_model(self):
+        return sum(p.numel() for p in self.model.parameters())
 
     def save_checkpoint(self):
         model_path = Path(self.ckpt_dir) / f"ckpt_{str(self.epoch).zfill(4)}.pt"

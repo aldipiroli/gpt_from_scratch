@@ -9,9 +9,9 @@ class Attention(nn.Module):
         self.in_embed_size = in_embed_size
         self.out_embed_size = out_embed_size
         self.use_mask = use_mask
-        self.keys = nn.Linear(in_embed_size, out_embed_size)
-        self.query = nn.Linear(in_embed_size, out_embed_size)
-        self.values = nn.Linear(in_embed_size, out_embed_size)
+        self.keys = nn.Linear(in_embed_size, out_embed_size, bias=False)
+        self.query = nn.Linear(in_embed_size, out_embed_size, bias=False)
+        self.values = nn.Linear(in_embed_size, out_embed_size, bias=False)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
@@ -81,20 +81,22 @@ class GPTModel(nn.Module):
         self.dropout = cfg["MODEL"]["dropout"]
 
         self.embedding = nn.Embedding(self.embed_size, self.embed_size)
-        self.pos_embeddings = nn.Embedding(self.embed_size, 1)
+        self.pos_embeddings = nn.Embedding(self.context_len, self.embed_size)
         self.tr_layers = nn.ModuleList(
             [
                 TransformerLayer(self.embed_size, self.num_heads, dropout=self.dropout)
                 for _ in range(self.transfomer_layers)
             ]
         )
-
+        self.ln = nn.LayerNorm(self.embed_size)
         self.project = nn.Linear(self.embed_size, self.vocab_size)
 
     def forward(self, x):
-        x = self.embedding(x) + self.pos_embeddings(x)
+        B, T = x.shape
+        x = self.embedding(x) + self.pos_embeddings(torch.arange(T, device=x.device))
         for tr_layer in self.tr_layers:
             x = tr_layer(x)
+        x = self.ln(x)
         out = self.project(x)  # (B, T, C)
         return out
 

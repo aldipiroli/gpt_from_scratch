@@ -3,15 +3,15 @@ LOG_DIR: "../artifacts/logs"
 IMG_OUT_DIR: "../artifacts/img"
 MODEL:
   model_name: "GPTModel"
-  context_len: 8
-  embed_size: 32
-  transfomer_layers: 4
+  context_len: 32
+  embed_size: 256
+  transfomer_layers: 8
   num_heads: 4
   dropout: 0.1
 DATA:
   root_dir: "../data/tiny_shakespeare"
   target_url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
-  batch_size: 2
+  batch_size: 16
 OPTIM:
   loss: ""
   optimizer: "AdamW"
