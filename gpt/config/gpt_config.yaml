@@ -4,6 +4,7 @@ IMG_OUT_DIR: "../artifacts/img"
 MODEL:
   model_name: "GPTModel"
   context_len: 8
+  embed_size: 32
 DATA:
   root_dir: "../data/tiny_shakespeare"
   target_url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
