@@ -6,9 +6,11 @@ class BigramModel(nn.Module):
         super().__init__()
         self.cfg = cfg
         self.embed_size = cfg["MODEL"]["embed_size"]
+        self.vocab_size = cfg["DATA"]["vocab_size"]
+
         self.embedding = nn.Embedding(self.embed_size, self.embed_size)
         self.pos_embeddings = nn.Embedding(self.embed_size, 1)
-        self.project = nn.Linear(self.embed_size, self.embed_size)
+        self.project = nn.Linear(self.embed_size, self.vocab_size)
 
     def forward(self, x):
         B, T = x.shape

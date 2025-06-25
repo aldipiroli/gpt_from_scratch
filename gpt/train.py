@@ -1,10 +1,13 @@
 import argparse
 
 from dataset.tiny_shakespeare import Tinyshakespeare
+from model.bigram_model import BigramModel
 from model.gpt_model import GPTModel
 from model.loss_function import GPTLoss
 from utils.misc import get_logger, load_config
 from utils.trainer import Trainer
+
+__all__models__ = {"GPTModel": GPTModel, "BigramModel": BigramModel}
 
 
 def train(args):
@@ -12,11 +15,12 @@ def train(args):
     logger = get_logger(config["LOG_DIR"])
     trainer = Trainer(config, logger)
 
-    model = GPTModel(config)
-    trainer.set_model(model)
-
     train_dataset = Tinyshakespeare(cfg=config, mode="train", logger=logger)
     val_dataset = Tinyshakespeare(cfg=config, mode="val", logger=logger)
+    config["DATA"]["vocab_size"] = train_dataset.vocab_size
+
+    model = __all__models__[config["MODEL"]["model_name"]](config)
+    trainer.set_model(model)
 
     trainer.set_dataset(train_dataset, val_dataset, data_config=config["DATA"])
     trainer.set_optimizer(optim_config=config["OPTIM"])

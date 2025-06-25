@@ -24,14 +24,14 @@ class Trainer(TrainerBase):
                 targets = targets.to(self.device)
 
                 preds = self.model(context)
-                # loss = self.loss_fn(preds, targets)
+                loss = self.loss_fn(preds, targets)
 
-                # loss.backward()
-                # self.gradient_clip()
-                # self.optimizer.step()
-                # self.total_iters += 1
-                # pbar.set_postfix({"total_iters": self.total_iters, "loss": loss.item(), "lr": self.get_lr()})
-                # self.scheaduler_step()
+                loss.backward()
+                self.gradient_clip()
+                self.optimizer.step()
+                self.total_iters += 1
+                pbar.set_postfix({"total_iters": self.total_iters, "loss": loss.item(), "lr": self.get_lr()})
+                self.scheaduler_step()
 
     def evaluate_model(self):
         self.logger.info("Running Evaluation...")

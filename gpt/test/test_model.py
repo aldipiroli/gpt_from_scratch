@@ -21,11 +21,12 @@ def test_gpt_model():
 
 def test_bigram_model():
     cfg_model = cfg["MODEL"]
+    cfg["DATA"]["vocab_size"] = 65
     model = BigramModel(cfg)
     B, T = 2, cfg_model["context_len"]
     x = torch.randint(0, cfg["MODEL"]["context_len"], (B, T))
     out = model(x)
-    assert out.shape == (B, T, cfg_model["embed_size"])
+    assert out.shape == (B, T, cfg["DATA"]["vocab_size"])
 
 
 if __name__ == "__main__":

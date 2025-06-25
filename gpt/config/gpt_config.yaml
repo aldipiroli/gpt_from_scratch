@@ -2,7 +2,7 @@ CKPT_DIR: "../artifacts/ckpts"
 LOG_DIR: "../artifacts/logs"
 IMG_OUT_DIR: "../artifacts/img"
 MODEL:
-  model_name: "GPTModel"
+  model_name: "BigramModel"
   context_len: 8
   embed_size: 32
 DATA:
