@@ -29,5 +29,16 @@ def test_bigram_model():
     assert out.shape == (B, T, cfg["DATA"]["vocab_size"])
 
 
+def test_bigram_model_generation():
+    cfg_model = cfg["MODEL"]
+    cfg["DATA"]["vocab_size"] = 65
+    model = BigramModel(cfg)
+    B, T = 2, cfg_model["context_len"]
+    x = torch.randint(0, cfg["MODEL"]["context_len"], (B, T))
+    max_tokens = 10
+    out = model.generate(x, max_tokens=max_tokens)
+    assert out.shape == (B, max_tokens)
+
+
 if __name__ == "__main__":
     print("All test passed!")

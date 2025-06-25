@@ -1,3 +1,6 @@
+import torch
+
+
 class WordLevelTokenizer:
     def __init__(self, vocab):
         self.vocab = sorted(vocab)
@@ -16,5 +19,11 @@ class WordLevelTokenizer:
         assert len(x) > 0
         x_decode = []
         for x_ in x:
+            x_ = self.from_tensor(x_)
             x_decode.append(self.decoder_mapping[x_])
         return "".join(x_decode)
+
+    def from_tensor(self, x):
+        if isinstance(x, torch.Tensor):
+            x = x.item()
+        return x

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import numpy as np
 import requests
 import torch
 from dataset.tokenizer import WordLevelTokenizer
@@ -24,6 +25,10 @@ class DatasetBase(Dataset):
         self.context_len = cfg["MODEL"]["context_len"]
         self.tokenizer = WordLevelTokenizer(self.vocab)
 
+        self.data_train = self.data[: int(len(self.data) * 0.9)]
+        self.data_val = self.data[int(len(self.data) * 0.9) :]
+        self.data = self.data_train if mode == "train" else self.data_val
+
     def download_data(self):
         file_path = os.path.join(self.root_dir, "input.txt")
         if not os.path.exists(file_path):
@@ -45,6 +50,9 @@ class DatasetBase(Dataset):
     def __getitem__(self, idx):
         context = self.data[idx : idx + self.context_len]
         target = self.data[idx + 1 : idx + 1 + self.context_len]
+
+        context = np.array(list(context))
+        target = np.array(list(target))
 
         context_encoder = self.tokenizer.encode(context)
         target_encoder = self.tokenizer.encode(target)
