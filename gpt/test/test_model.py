@@ -17,11 +17,6 @@ with tempfile.TemporaryDirectory() as tmp_dir:
     cfg["DATA"]["vocab_size"] = 65
 
 
-def test_gpt_model():
-    model = GPTModel(cfg)
-    assert True
-
-
 def test_bigram_model():
     cfg_model = cfg["MODEL"]
     model = BigramModel(cfg)
@@ -73,6 +68,24 @@ def test_transformer_layer():
     module = TransformerLayer(embed_size=embed_size, num_heads=num_heads)
     out = module(x)
     assert out.shape == (B, T, embed_size)
+
+
+def test_gpt_model():
+    data = "hello, world! This is the next"
+    vocab = sorted(list(set(data)))
+    cfg["DATA"]["vocab_size"] = len(vocab)
+    context_len = cfg["MODEL"]["context_len"]
+
+    tok = WordLevelTokenizer(vocab)
+    model = GPTModel(cfg)
+    B = 1
+    x = data[:context_len]
+    T = len(x)
+    x_enc = tok.encode(x)
+    x_enc = torch.tensor(np.array(x_enc))
+    x_enc = x_enc.reshape(B, -1)  # B,T
+    out = model(x_enc)
+    assert out.shape == (B, T, len(vocab))
 
 
 if __name__ == "__main__":

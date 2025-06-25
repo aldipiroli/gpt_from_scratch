@@ -5,6 +5,8 @@ MODEL:
   model_name: "BigramModel"
   context_len: 8
   embed_size: 32
+  transfomer_layers: 4
+  num_heads: 4
 DATA:
   root_dir: "../data/tiny_shakespeare"
   target_url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"

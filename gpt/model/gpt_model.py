@@ -68,16 +68,22 @@ class GPTModel(nn.Module):
         self.cfg = cfg
         self.embed_size = cfg["MODEL"]["embed_size"]
         self.vocab_size = cfg["DATA"]["vocab_size"]
+        self.transfomer_layers = cfg["MODEL"]["transfomer_layers"]
+        self.num_heads = cfg["MODEL"]["num_heads"]
 
         self.embedding = nn.Embedding(self.embed_size, self.embed_size)
         self.pos_embeddings = nn.Embedding(self.embed_size, 1)
+        self.tr_layers = nn.ModuleList(
+            [TransformerLayer(self.embed_size, self.num_heads) for _ in range(self.transfomer_layers)]
+        )
+
         self.project = nn.Linear(self.embed_size, self.vocab_size)
 
     def forward(self, x):
-        x_emb = self.embedding(x)  # (B, T, embed_size)
-        pos_embedding = self.pos_embeddings(x)
-        out = out + pos_embedding
-        out = self.project(out)  # (B, T, C)
+        x = self.embedding(x) + self.pos_embeddings(x)
+        for tr_layer in self.tr_layers:
+            x = tr_layer(x)
+        out = self.project(x)  # (B, T, C)
         return out
 
     @torch.no_grad()
@@ -94,6 +100,4 @@ if __name__ == "__main__":
     B, T, embed_size = 2, 10, 32
     num_heads = 4
     x = torch.randn(B, T, embed_size)
-    module = TransformerLayer(embed_size=embed_size, num_heads=num_heads)
-    out = module(x)
-    assert out.shape == (B, T, embed_size)
+    module = GPTModel()
