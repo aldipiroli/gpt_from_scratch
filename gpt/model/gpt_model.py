@@ -22,7 +22,6 @@ class Attention(nn.Module):
         qk = q @ k.transpose(2, 1)  # B, T, T
 
         if self.use_mask:  # mask past tokens
-            B = x.shape[0]
             tril = torch.tril(torch.ones(B, T, T))
             qk = qk.masked_fill(tril == 0, float("-inf"))
             attention = F.softmax(qk / self.out_embed_size**-0.5, -1)
@@ -43,8 +42,24 @@ class MultiHeadAttention(nn.Module):
 
 
 class TransformerLayer(nn.Module):
-    def __init__(self):
+    def __init__(
+        self,
+        embed_size,
+        num_heads,
+    ):
         super().__init__()
+        self.mha = MultiHeadAttention(embed_size=embed_size, num_heads=num_heads)
+        self.ln1 = nn.LayerNorm(embed_size)
+        self.ln2 = nn.LayerNorm(embed_size)
+        self.ffw = nn.Linear(embed_size, embed_size)
+
+    def forward(self, x):
+        x_mha = self.mha(self.ln1(x))
+        x = x + x_mha
+
+        x_ffw = self.ffw(self.ln2(x))
+        x = x + x_ffw
+        return x
 
 
 class GPTModel(nn.Module):
@@ -79,6 +94,6 @@ if __name__ == "__main__":
     B, T, embed_size = 2, 10, 32
     num_heads = 4
     x = torch.randn(B, T, embed_size)
-    module = MultiHeadAttention(embed_size=embed_size, num_heads=num_heads)
+    module = TransformerLayer(embed_size=embed_size, num_heads=num_heads)
     out = module(x)
     assert out.shape == (B, T, embed_size)

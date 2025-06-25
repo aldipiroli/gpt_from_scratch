@@ -8,7 +8,7 @@ import numpy as np
 import torch
 from dataset.tokenizer import WordLevelTokenizer
 from model.bigram_model import BigramModel
-from model.gpt_model import Attention, GPTModel, MultiHeadAttention
+from model.gpt_model import Attention, GPTModel, MultiHeadAttention, TransformerLayer
 from utils.misc import get_logger, load_config
 
 with tempfile.TemporaryDirectory() as tmp_dir:
@@ -61,6 +61,16 @@ def test_multihead_attention():
     num_heads = 4
     x = torch.randn(B, T, embed_size)
     module = MultiHeadAttention(embed_size=embed_size, num_heads=num_heads)
+    out = module(x)
+    assert out.shape == (B, T, embed_size)
+    assert (out == out).all()  # Check for NaN
+
+
+def test_transformer_layer():
+    B, T, embed_size = 2, 10, 32
+    num_heads = 4
+    x = torch.randn(B, T, embed_size)
+    module = TransformerLayer(embed_size=embed_size, num_heads=num_heads)
     out = module(x)
     assert out.shape == (B, T, embed_size)
 
