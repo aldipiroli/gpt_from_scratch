@@ -46,7 +46,7 @@ def test_attention():
     embed_size = 32
     B, T = 2, 10
     x = torch.randn(B, T, embed_size)
-    module = Attention(in_embed_size=embed_size, out_embed_size=embed_size)
+    module = Attention(in_embed_size=embed_size, out_embed_size=embed_size, dropout=0.1)
     out = module(x)
     assert out.shape == (B, T, embed_size)
 
@@ -55,7 +55,7 @@ def test_multihead_attention():
     B, T, embed_size = 2, 10, 32
     num_heads = 4
     x = torch.randn(B, T, embed_size)
-    module = MultiHeadAttention(embed_size=embed_size, num_heads=num_heads)
+    module = MultiHeadAttention(embed_size=embed_size, num_heads=num_heads, dropout=0.1)
     out = module(x)
     assert out.shape == (B, T, embed_size)
     assert (out == out).all()  # Check for NaN
@@ -65,7 +65,7 @@ def test_transformer_layer():
     B, T, embed_size = 2, 10, 32
     num_heads = 4
     x = torch.randn(B, T, embed_size)
-    module = TransformerLayer(embed_size=embed_size, num_heads=num_heads)
+    module = TransformerLayer(embed_size=embed_size, num_heads=num_heads, dropout=0.1)
     out = module(x)
     assert out.shape == (B, T, embed_size)
 
