@@ -6,15 +6,15 @@ import tempfile
 
 import numpy as np
 import torch
+from cfg import cfg
 from dataset.tokenizer import WordLevelTokenizer
 from model.bigram_model import BigramModel
 from model.gpt_model import Attention, GPTModel, MultiHeadAttention, TransformerLayer
-from utils.misc import get_logger, load_config
+from utils.misc import get_logger
 
 with tempfile.TemporaryDirectory() as tmp_dir:
     logger = get_logger(tmp_dir)
-    cfg = load_config("config/gpt_config.yaml")
-    cfg["DATA"]["vocab_size"] = 65
+cfg["DATA"]["vocab_size"] = 65
 
 
 def test_bigram_model():
