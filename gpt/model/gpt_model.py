@@ -102,12 +102,16 @@ class GPTModel(nn.Module):
 
     @torch.no_grad()
     def generate(self, x, max_tokens):
+        all_out_tokens = []
         for _ in range(max_tokens):
-            out = self(x[:, -self.context_len :])  # (B, T, C)
+            out = self(x)  # (B, T)
             out_prob = F.softmax(out, -1)
             out_token = torch.multinomial(out_prob[:, -1, :], 1).to(x.device)
+            all_out_tokens.append(out_token)
             x = torch.cat([x, out_token], -1)
-        return x
+            if x.shape[1] > self.context_len:
+                x = x[:, -self.context_len :]  # remove extra tokens
+        return torch.tensor(all_out_tokens)
 
 
 if __name__ == "__main__":

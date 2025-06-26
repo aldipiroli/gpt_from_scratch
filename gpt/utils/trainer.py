@@ -17,13 +17,13 @@ class Trainer(TrainerBase):
 
     def train(self):
         self.logger.info("Started training..")
-        self.generate_tokens()
-
         for epoch in range(self.config["OPTIM"]["num_epochs"]):
             self.epoch = epoch
             self.train_one_epoch()
             self.evaluate_model()
-            self.generate_tokens()
+            self.save_checkpoint()
+            if epoch % self.eval_every == 0:
+                self.generate_output()
 
     def train_one_epoch(self):
         self.model.train()
@@ -68,14 +68,15 @@ class Trainer(TrainerBase):
         self.logger.info(f"Epoch {self.epoch}/{self.num_epochs}: val loss {torch.mean(torch.tensor(eval_loss))}")
 
     @torch.no_grad()
-    def generate_tokens(self, num_gen_tokens=100):
+    def generate_output(self, context="\n", num_gen_tokens=2000):
         self.model.eval()
-        context = "\n"
+        self.logger.info("-" * 30)
+        self.logger.info(f"Prompt: {context}")
+        self.logger.info("-" * 30)
+        self.logger.info("Generated Output")
+        self.logger.info("-" * 30)
         context = self.val_dataset.tokenize_string(context[: self.model.context_len])
         context = context.unsqueeze(0).to(self.device)
         generated = self.model.generate(context, num_gen_tokens)
-        self.logger.info("-" * 30)
-        self.logger.info("Generated Tokens")
-        self.logger.info("-" * 30)
         self.logger.info(f"{self.val_dataset.tokenizer.decode(generated.squeeze())}")
         self.logger.info("-" * 30)

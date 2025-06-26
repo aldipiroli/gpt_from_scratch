@@ -4,10 +4,10 @@ IMG_OUT_DIR: "../artifacts/img"
 MODEL:
   model_name: "GPTModel"
   context_len: 32
-  embed_size: 64
+  embed_size: 128
   transfomer_layers: 8
   num_heads: 4
-  dropout: 0.0
+  dropout: 0.1
 DATA:
   root_dir: "../data/tiny_shakespeare"
   target_url: "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
@@ -15,10 +15,10 @@ DATA:
 OPTIM:
   loss: ""
   optimizer: "AdamW"
-  lr: 0.001
-  num_iterations_train: 100
-  num_iterations_val: 100
-  num_epochs: 100
+  lr: 0.0003
+  num_iterations_train: 1000
+  num_iterations_val: 200
+  num_epochs: 50
   eval_every: 5
   gradient_clip: true
   scheduler: ""
