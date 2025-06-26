@@ -25,12 +25,13 @@ def train(args):
     trainer.set_dataset(train_dataset, val_dataset, data_config=config["DATA"])
     trainer.set_optimizer(optim_config=config["OPTIM"])
     trainer.set_loss_function(GPTLoss())
-
+    trainer.load_checkpoint(args.ckpt)
     trainer.fine_tune()
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("config", type=str, default="config/gpt_config.yaml", help="Config path")
+    parser.add_argument("--config", type=str, default="config/gpt_config.yaml", help="Config path")
+    parser.add_argument("--ckpt", type=str, required=True)
     args = parser.parse_args()
     train(args)

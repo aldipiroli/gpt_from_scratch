@@ -22,11 +22,12 @@ class FineTuneDataset(Tinyshakespeare):
         text, validity_mask = self.truncate_text(data)
 
         context = text[: self.context_len]
-        target = text[1 : self.context_len + 2]
-        validity_mask = validity_mask[1 : 1 + self.context_len + 1]
+        target = text[1 : self.context_len + 1]
+        validity_mask = validity_mask[1 : 1 + self.context_len]
 
         context = self.tokenize_string(context)
         target = self.tokenize_string(target)
+        assert context.shape == target.shape, f"context.shape {context.shape}, target.shape {target.shape}"
         return context, target, validity_mask
 
     def truncate_text(self, data):
@@ -55,12 +56,3 @@ class FineTuneDataset(Tinyshakespeare):
                 question, answer = row
                 qa_list.append((question, answer))
         return qa_list
-
-
-###########################################
-import debugpy
-
-debugpy.listen(("localhost", 6001))
-print("Waiting for debugger attach...")
-debugpy.wait_for_client()
-###########################################
