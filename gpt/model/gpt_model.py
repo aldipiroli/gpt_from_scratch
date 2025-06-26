@@ -4,11 +4,10 @@ import torch.nn.functional as F
 
 
 class Attention(nn.Module):
-    def __init__(self, in_embed_size, out_embed_size, dropout, use_mask=True):
+    def __init__(self, in_embed_size, out_embed_size, dropout):
         super().__init__()
         self.in_embed_size = in_embed_size
         self.out_embed_size = out_embed_size
-        self.use_mask = use_mask
         self.keys = nn.Linear(in_embed_size, out_embed_size, bias=False)
         self.query = nn.Linear(in_embed_size, out_embed_size, bias=False)
         self.values = nn.Linear(in_embed_size, out_embed_size, bias=False)
@@ -20,13 +19,12 @@ class Attention(nn.Module):
         q = self.query(x)
         v = self.values(x)  # B,T,C
 
-        qk = q @ k.transpose(2, 1)  # B, T, T
+        qk = q @ k.transpose(2, 1) * self.out_embed_size**-0.5  # B, T, T
 
-        if self.use_mask:  # mask past tokens
-            tril = torch.tril(torch.ones(B, T, T)).to(qk.device)
-            qk = qk.masked_fill(tril == 0, float("-inf"))
-            attention = F.softmax(qk / self.out_embed_size**-0.5, -1)
-            attention = self.dropout(attention)
+        tril = torch.tril(torch.ones(B, T, T)).to(qk.device)
+        qk = qk.masked_fill(tril == 0, float("-inf"))
+        attention = F.softmax(qk, -1)
+        attention = self.dropout(attention)
 
         attention = attention @ v
         return attention
@@ -99,7 +97,7 @@ class GPTModel(nn.Module):
         for tr_layer in self.tr_layers:
             x = tr_layer(x)
         x = self.ln(x)
-        out = self.project(x)  # (B, T, C)
+        out = self.project(x)  # (B, T, vocab_size)
         return out
 
     @torch.no_grad()
