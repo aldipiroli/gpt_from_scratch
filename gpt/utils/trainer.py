@@ -15,6 +15,38 @@ class Trainer(TrainerBase):
             shuffle=True,
         )
 
+    def fine_tune(self):
+        self.logger.info("Started fine-tuning..")
+        for epoch in range(self.config["OPTIM"]["num_epochs"]):
+            self.epoch = epoch
+            self.fine_tune_one_epoch()
+            self.save_checkpoint()
+
+    def fine_tune_one_epoch(self):
+        self.model.train()
+        self.reshuffle_dataloader()
+        train_loss = []
+        max_iters = min(self.config["OPTIM"]["num_iterations_train"], len(self.train_loader))
+        pbar = tqdm(enumerate(self.train_loader), total=max_iters)
+        for n_iter, (context, targets, validity_mask) in pbar:
+            if n_iter > max_iters:
+                break
+            self.optimizer.zero_grad()
+            context = context.to(self.device)
+            targets = targets.to(self.device)
+            validity_mask = validity_mask.to(self.device)
+
+            preds = self.model(context)
+            loss = self.loss_fn(preds, targets, validity_mask)
+            train_loss.append(loss)
+
+            loss.backward()
+            self.gradient_clip()
+            self.optimizer.step()
+            self.total_iters += 1
+            pbar.set_postfix({"loss": loss.item()})
+        self.logger.info(f"Epoch {self.epoch}/{self.num_epochs}: train loss {torch.mean(torch.tensor(train_loss))}")
+
     def train(self):
         self.logger.info("Started training..")
         for epoch in range(self.config["OPTIM"]["num_epochs"]):
