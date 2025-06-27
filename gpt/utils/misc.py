@@ -38,4 +38,4 @@ def get_logger(log_dir):
         ch = logging.StreamHandler()
         ch.setFormatter(formatter)
         logger.addHandler(ch)
-    return logger
+    return logger, now

@@ -28,6 +28,7 @@ class DatasetBase(Dataset):
         self.data_train = self.data[: int(len(self.data) * 0.9)]
         self.data_val = self.data[int(len(self.data) * 0.9) :]
         self.data = self.data_train if mode == "train" else self.data_val
+        self.logger.info(f"Dataset mode: {self.mode}, len: {len(self.data)}")
 
     def download_data(self):
         file_path = os.path.join(self.root_dir, "input.txt")

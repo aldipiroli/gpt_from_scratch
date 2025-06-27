@@ -1,10 +1,11 @@
 CKPT_DIR: "../artifacts/ckpts"
 LOG_DIR: "../artifacts/logs"
+TB_LOG_DIR: "../artifacts/tb_logs"
 IMG_OUT_DIR: "../artifacts/img"
 MODEL:
   model_name: "GPTModel"
   context_len: 32
-  embed_size: 128
+  embed_size: 256
   transfomer_layers: 8
   num_heads: 4
   dropout: 0.1
@@ -16,10 +17,10 @@ DATA:
 OPTIM:
   loss: ""
   optimizer: "AdamW"
-  lr: 0.00001
-  num_iterations_train: 1000
-  num_iterations_val: 200
-  num_epochs: 50
+  lr: 0.0001
+  num_iterations_train: 100
+  num_iterations_val: 100
+  num_epochs: 100
   eval_every: 5
   gradient_clip: true
   scheduler: ""

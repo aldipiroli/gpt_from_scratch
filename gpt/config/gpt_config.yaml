@@ -1,5 +1,6 @@
 CKPT_DIR: "../artifacts/ckpts"
 LOG_DIR: "../artifacts/logs"
+TB_LOG_DIR: "../artifacts/tb_logs"
 IMG_OUT_DIR: "../artifacts/img"
 MODEL:
   model_name: "GPTModel"
@@ -18,7 +19,7 @@ OPTIM:
   lr: 0.0003
   num_iterations_train: 1000
   num_iterations_val: 200
-  num_epochs: 50
+  num_epochs: 500
   eval_every: 5
   gradient_clip: true
   scheduler: ""

@@ -12,8 +12,8 @@ __all__models__ = {"GPTModel": GPTModel, "BigramModel": BigramModel}
 
 def train(args):
     config = load_config(args.config)
-    logger = get_logger(config["LOG_DIR"])
-    trainer = Trainer(config, logger)
+    logger, now = get_logger(config["LOG_DIR"])
+    trainer = Trainer(config, logger, now)
 
     train_dataset = FineTuneDataset(cfg=config, mode="train", logger=logger)
     val_dataset = FineTuneDataset(cfg=config, mode="val", logger=logger)
@@ -25,7 +25,7 @@ def train(args):
     trainer.set_dataset(train_dataset, val_dataset, data_config=config["DATA"])
     trainer.set_optimizer(optim_config=config["OPTIM"])
     trainer.set_loss_function(GPTLoss())
-    trainer.load_checkpoint(args.ckpt)
+    trainer.load_checkpoint(args.ckpt, skip_otimizer=True)
     trainer.fine_tune()
 
 

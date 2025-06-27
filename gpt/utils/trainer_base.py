@@ -3,17 +3,20 @@ from pathlib import Path
 
 import torch
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 from utils.misc import get_device
 
 
 class TrainerBase(ABC):
-    def __init__(self, config, logger):
+    def __init__(self, config, logger, now):
         self.config = config
         self.logger = logger
+        self.now = now
         self.logger.info(f"config: {config}")
         self.epoch = 0
         self.num_epochs = config["OPTIM"]["num_epochs"]
         self.total_iters = 0
+        self.set_mlops()
 
         self.ckpt_dir = Path(config["CKPT_DIR"])
         self.ckpt_dir.mkdir(parents=True, exist_ok=True)
@@ -22,6 +25,18 @@ class TrainerBase(ABC):
         self.artifacts_img_dir = Path(config["IMG_OUT_DIR"])
         self.artifacts_img_dir.mkdir(parents=True, exist_ok=True)
         self.eval_every = config["OPTIM"]["eval_every"]
+
+    def set_mlops(self):
+        logdir = Path(self.config["TB_LOG_DIR"]) / self.now
+        self.writer = SummaryWriter(log_dir=logdir)
+
+    def write_float_to_tb(self, value, name, step):
+        if isinstance(value, torch.Tensor):
+            value = value.item()
+        self.writer.add_scalar(name, value, step)
+
+    def write_text_to_tb(self, text, name, step):
+        self.writer.add_text(name, text, step)
 
     def set_model(self, model):
         self.model = model
@@ -41,6 +56,7 @@ class TrainerBase(ABC):
                 "epoch": self.epoch,
                 "model_state_dict": self.model.state_dict(),
                 "optimizer_state_dict": self.optimizer.state_dict(),
+                "total_iters": self.total_iters,
             },
             model_path,
         )
@@ -59,13 +75,15 @@ class TrainerBase(ABC):
         latest_ckpt = max(ckpt_files, key=lambda x: int(x.stem.split("_")[1]))
         self.load_checkpoint(latest_ckpt)
 
-    def load_checkpoint(self, ckpt_path):
+    def load_checkpoint(self, ckpt_path, skip_otimizer=False):
         self.logger.info(f"Loading checkpoint: {ckpt_path}")
 
         checkpoint = torch.load(ckpt_path, weights_only=False, map_location=torch.device("cpu"))
         self.model.load_state_dict(checkpoint["model_state_dict"])
-        self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        if skip_otimizer:
+            self.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         self.epoch = checkpoint.get("epoch", 0)
+        self.total_iters = checkpoint.get("total_iters", 0)
 
     def set_dataset(self, train_dataset, val_dataset, data_config):
         self.train_dataset = train_dataset

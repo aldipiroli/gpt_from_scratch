@@ -10,8 +10,8 @@ from utils.trainer import Trainer
 @torch.no_grad()
 def run_inference(args):
     config = load_config(args.config)
-    logger = get_logger(config["LOG_DIR"])
-    trainer = Trainer(config, logger)
+    logger, now = get_logger(config["LOG_DIR"])
+    trainer = Trainer(config, logger, now)
 
     val_dataset = Tinyshakespeare(cfg=config, mode="val", logger=logger)
     config["DATA"]["vocab_size"] = val_dataset.vocab_size
