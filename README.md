@@ -6,16 +6,14 @@ Implementing from scratch the paper ["Improving Language Understanding by Genera
 ### Clone and install dependencies
 ``` 
 git clone https://github.com/aldipiroli/gpt_from_scratch
-pip install -r requirements.txt
+pip install -r requirements.txt && cd gpt
 ``` 
 ### Train 
 ``` 
-cd python 
 python train.py config/gpt_config.yaml
 ```
 ### Fine-tune 
 ``` 
-cd python 
 python fine_tune.py --config config/gpt_finetune_config.yaml --ckpt path/to/ckpt
 ```
 ### Inference
