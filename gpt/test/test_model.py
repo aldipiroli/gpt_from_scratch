@@ -13,7 +13,7 @@ from model.gpt_model import Attention, GPTModel, MultiHeadAttention, Transformer
 from utils.misc import get_logger
 
 with tempfile.TemporaryDirectory() as tmp_dir:
-    logger = get_logger(tmp_dir)
+    logger, _ = get_logger(tmp_dir)
 cfg["DATA"]["vocab_size"] = 65
 
 

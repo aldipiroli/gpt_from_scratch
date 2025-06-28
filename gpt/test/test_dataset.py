@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 from utils.misc import get_logger
 
 with tempfile.TemporaryDirectory() as tmp_dir:
-    logger = get_logger(tmp_dir)
+    logger, _ = get_logger(tmp_dir)
 
 
 def test_dataloader():
