@@ -50,10 +50,47 @@ class MultiHeadAttention(nn.Module):
         return out
 
 
+class ParallelMultiHeadAttention(nn.Module):
+    def __init__(self, embed_size, num_heads, dropout):
+        super().__init__()
+        assert embed_size % num_heads == 0
+        self.num_heads = num_heads
+        self.embed_size = embed_size
+        self.U = nn.Linear(embed_size, num_heads * 3 * (embed_size // num_heads), bias=False)
+        self.dropout = nn.Dropout(dropout)
+        self.project = nn.Linear(embed_size, embed_size)
+
+    def forward(self, x):
+        B, T, C = x.shape
+        C_h = self.embed_size // self.num_heads
+        kqv = self.U(x)  # (B, T, n_heads*3*C_h)
+        kqv = kqv.reshape(B, T, self.num_heads, C_h, 3)
+        kqv = kqv.permute(2, 0, 1, 3, 4)  # (n_heads, B, T, C_h, 3)
+        k = kqv[..., 0]
+        q = kqv[..., 1]
+        v = kqv[..., 2]  # (n_heads, B, T, C_h)
+
+        qk = q @ k.transpose(3, 2) * C_h**-0.5  # (n_heads, B, T, T)
+        tril = torch.tril(torch.ones(T, T)).to(qk.device)
+        qk = qk.masked_fill(tril == 0, float("-inf"))
+        attention = F.softmax(qk, -1)
+        attention = self.dropout(attention)
+        attention = attention @ v  # (n_heads, B, T, C_h)
+
+        # aggregate heads
+        attention = attention.permute(1, 2, 3, 0).reshape(B, T, C)
+
+        out = self.project(attention)
+        out = self.dropout(out)
+        assert out.shape == (B, T, C)  # sanity check
+        return out
+
+
 class TransformerLayer(nn.Module):
     def __init__(self, embed_size, num_heads, dropout):
         super().__init__()
-        self.mha = MultiHeadAttention(embed_size=embed_size, num_heads=num_heads, dropout=dropout)
+        # self.mha = MultiHeadAttention(embed_size=embed_size, num_heads=num_heads, dropout=dropout)
+        self.mha_parallel = ParallelMultiHeadAttention(embed_size=embed_size, num_heads=num_heads, dropout=dropout)
         self.ln1 = nn.LayerNorm(embed_size)
         self.ln2 = nn.LayerNorm(embed_size)
         self.ffw = nn.Sequential(
@@ -61,7 +98,7 @@ class TransformerLayer(nn.Module):
         )
 
     def forward(self, x):
-        x_mha = self.mha(self.ln1(x))
+        x_mha = self.mha_parallel(self.ln1(x))
         x = x + x_mha
 
         x_ffw = self.ffw(self.ln2(x))
